@@ -189,6 +189,48 @@ Stores weather measurements linked to each city, including observation timestamp
 
 A uniqueness constraint on city and observation timestamp helps prevent duplicate observations.
 
+
+## Data Architecture
+
+The pipeline uses a three-layer architecture to separate ingested data, cleaned data, and analytical data.
+
+```mermaid
+flowchart TD
+    A[Open-Meteo API] --> B[Python Ingestion]
+    B --> C[Raw Layer<br/>raw.weather_api_responses]
+    C --> D[Cleaning and Validation]
+    D --> E[Staging Layer<br/>staging.daily_weather]
+    E --> F[Transformation]
+    F --> G[Marts Layer<br/>marts.dim_city]
+    F --> H[Marts Layer<br/>marts.fact_daily_weather]
+    G --> I[SQL Analytics and Reporting]
+    H --> I
+```
+
+### Schema Documentation and Row Grain
+
+| Layer / table | What one row represents | Primary key |
+|---|---|---|
+| `raw.weather_api_responses` | One captured API response | `ingestion_id` |
+| `staging.daily_weather` | One cleaned daily observation for a city | `city_name`, `observation_date` |
+| `marts.dim_city` | One distinct city | `city_id` |
+| `marts.fact_daily_weather` | One city's daily analytical record | `city_id`, `observation_date` |
+
+### Layer Responsibilities
+
+- **Raw:** Preserves original API payloads and ingestion metadata for traceability and reprocessing.
+- **Staging:** Standardizes dates, units, column names, and weather measurements. Enforces daily record uniqueness.
+- **Marts:** Organizes cleaned data into a city dimension and a daily weather fact table for reporting and analysis.
+
+### Data Flow
+
+1. Python fetches weather data from Open-Meteo.
+2. The original response is stored in the raw layer.
+3. Data is cleaned and validated before being written to staging.
+4. Staging data is transformed into the city dimension and daily weather fact table.
+5. SQL queries use the marts layer for analysis and reporting.
+
+
 ## Week 1 Checkpoint
 
 This project demonstrates how to:

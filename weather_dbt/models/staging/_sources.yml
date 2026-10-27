@@ -1,0 +1,30 @@
+version: 2
+
+sources:
+  - name: weather
+    description: Existing weather pipeline tables in PostgreSQL.
+    schema: public
+    tables:
+      - name: cities
+      - name: weather_observations
+models:
+  - name: stg_weather_observations
+    columns:
+      - name: observation_id
+        data_tests:
+          - unique
+          - not_null
+      - name: city_id
+        data_tests:
+          - not_null
+      - name: observation_date
+        data_tests:
+          - not_null
+  - name: daily_city_weather
+    columns:
+      - name: city_id
+        data_tests:
+          - not_null
+      - name: observation_date
+        data_tests:
+          - not_null
