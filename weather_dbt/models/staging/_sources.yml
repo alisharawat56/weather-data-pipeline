@@ -1,30 +1,132 @@
+
 version: 2
 
 sources:
   - name: weather
-    description: Existing weather pipeline tables in PostgreSQL.
+    description: >
+      Existing PostgreSQL tables populated by the Python weather ingestion
+      pipeline. Weather measurements use Celsius, millimeters, and km/h.
     schema: public
     tables:
       - name: cities
+        description: "Reference table containing the cities monitored by the pipeline."
+        columns:
+          - name: city_id
+            description: "Primary identifier for a city."
+            data_tests:
+              - unique
+              - not_null
+
       - name: weather_observations
+        description: "Weather measurements associated with a city and observation timestamp."
+        columns:
+          - name: observation_id
+            description: "Unique identifier for a weather observation."
+            data_tests:
+              - unique
+              - not_null
+
+          - name: city_id
+            description: "Identifier of the city associated with this observation."
+            data_tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('weather', 'cities')
+                    field: city_id
+
+          - name: observation_timestamp
+            description: "Timestamp when the weather observation was recorded."
+            data_tests:
+              - not_null
+
+          - name: temperature_c
+            description: "Observed temperature in degrees Celsius."
+            data_tests:
+              - not_null
+
+          - name: precipitation_mm
+            description: "Observed precipitation in millimeters; zero is valid."
+            data_tests:
+              - not_null
+
+          - name: wind_speed_kmh
+            description: "Observed wind speed in kilometers per hour."
+            data_tests:
+              - not_null
+
 models:
   - name: stg_weather_observations
+    description: >
+      Staging view joining weather observations to city names and converting
+      the source timestamp into an observation date. One row represents one
+      source observation; multiple observations for a city and date are possible.
     columns:
       - name: observation_id
+        description: "Unique identifier for the source observation."
         data_tests:
           - unique
           - not_null
+
       - name: city_id
+        description: "City identifier used to join observations to the city reference."
         data_tests:
           - not_null
+          - relationships:
+              arguments:
+                to: source('weather', 'cities')
+                field: city_id
+
+      - name: city_name
+        description: "Human-readable city name from the cities reference table."
+        data_tests:
+          - not_null
+
       - name: observation_date
+        description: "Calendar date derived from observation_timestamp."
         data_tests:
           - not_null
+
+      - name: temperature_c
+        description: "Temperature in degrees Celsius."
+
+      - name: precipitation_mm
+        description: "Precipitation in millimeters; zero means no precipitation."
+
+      - name: wind_speed_kmh
+        description: "Wind speed in kilometers per hour."
+
   - name: daily_city_weather
+    description: >
+      Analytics table aggregated by city and observation date. Temperature
+      is averaged, precipitation is summed, wind speed is maximized, and
+      observation_count records the number of source rows in each group.
     columns:
       - name: city_id
+        description: "City identifier for the daily aggregate."
         data_tests:
           - not_null
+
+      - name: city_name
+        description: "Human-readable city name."
+        data_tests:
+          - not_null
+
       - name: observation_date
+        description: "Date represented by the daily aggregate."
+        data_tests:
+          - not_null
+
+      - name: average_temperature_c
+        description: "Mean source temperature for the city and date, rounded to two decimals."
+
+      - name: total_precipitation_mm
+        description: "Sum of source precipitation for the city and date, rounded to two decimals."
+
+      - name: max_wind_speed_kmh
+        description: "Maximum source wind speed for the city and date, rounded to two decimals."
+
+      - name: observation_count
+        description: "Number of source observations included in the daily aggregate."
         data_tests:
           - not_null
