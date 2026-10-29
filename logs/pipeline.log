@@ -1,0 +1,230 @@
+2026-10-24 17:31:30,874 ERROR Pipeline load failed.
+Traceback (most recent call last):
+  File "C:\Users\1234\OneDrive\Desktop\weather-data-pipeline\src\load_weather.py", line 214, in main
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: CSV is missing expected columns: ['precipitation', 'temperature_max', 'temperature_min']. Found: ['date', 'temperature_max_c', 'temperature_min_c', 'precipitation_mm', 'city']
+2026-10-24 17:35:32,411 INFO Connected to PostgreSQL successfully.
+2026-10-24 17:35:32,459 INFO City records processed successfully.
+2026-10-24 17:35:32,588 INFO Observation rows processed: 21
+2026-10-24 17:35:32,591 INFO City count: 3
+2026-10-24 17:35:32,598 INFO Observation count: 24
+2026-10-24 17:35:32,600 INFO Observations missing temperature: 0
+2026-10-24 17:35:32,603 INFO Observations missing precipitation: 0
+2026-10-24 17:35:32,605 INFO Observations missing wind speed: 21
+2026-10-24 17:35:32,610 INFO City averages: {'name': 'Champaign', 'avg_temp_c': Decimal('21.66'), 'avg_precip_mm': Decimal('0.06'), 'avg_wind_kmh': Decimal('12.40')}
+2026-10-24 17:35:32,610 INFO City averages: {'name': 'Chicago', 'avg_temp_c': Decimal('20.90'), 'avg_precip_mm': Decimal('2.89'), 'avg_wind_kmh': Decimal('18.20')}
+2026-10-24 17:35:32,611 INFO City averages: {'name': 'New York', 'avg_temp_c': Decimal('18.84'), 'avg_precip_mm': Decimal('0.15'), 'avg_wind_kmh': Decimal('14.60')}
+2026-10-24 17:35:32,615 INFO Pipeline load completed successfully.
+2026-10-24 17:36:55,761 INFO Connected to PostgreSQL successfully.
+2026-10-24 17:36:55,789 INFO City records processed successfully.
+2026-10-24 17:36:55,867 INFO Observation rows processed: 21
+2026-10-24 17:36:55,870 INFO City count: 3
+2026-10-24 17:36:55,878 INFO Observation count: 24
+2026-10-24 17:36:55,880 INFO Observations missing temperature: 0
+2026-10-24 17:36:55,882 INFO Observations missing precipitation: 0
+2026-10-24 17:36:55,884 INFO Observations missing wind speed: 21
+2026-10-24 17:36:55,890 INFO City averages: {'name': 'Champaign', 'avg_temp_c': Decimal('21.66'), 'avg_precip_mm': Decimal('0.06'), 'avg_wind_kmh': Decimal('12.40')}
+2026-10-24 17:36:55,890 INFO City averages: {'name': 'Chicago', 'avg_temp_c': Decimal('20.90'), 'avg_precip_mm': Decimal('2.89'), 'avg_wind_kmh': Decimal('18.20')}
+2026-10-24 17:36:55,891 INFO City averages: {'name': 'New York', 'avg_temp_c': Decimal('18.84'), 'avg_precip_mm': Decimal('0.15'), 'avg_wind_kmh': Decimal('14.60')}
+2026-10-24 17:36:55,913 INFO Pipeline load completed successfully.
+2026-10-24 17:43:49,522 INFO Connected to PostgreSQL successfully.
+2026-10-24 17:43:49,548 INFO City records processed successfully.
+2026-10-24 17:43:49,646 INFO Observation rows processed: 21
+2026-10-24 17:43:49,649 INFO City count: 3
+2026-10-24 17:43:49,658 INFO Observation count: 24
+2026-10-24 17:43:49,660 INFO Observations missing temperature: 0
+2026-10-24 17:43:49,663 INFO Observations missing precipitation: 0
+2026-10-24 17:43:49,666 INFO Observations missing wind speed: 21
+2026-10-24 17:43:49,671 INFO City averages: {'name': 'Champaign', 'avg_temp_c': Decimal('21.66'), 'avg_precip_mm': Decimal('0.06'), 'avg_wind_kmh': Decimal('12.40')}
+2026-10-24 17:43:49,672 INFO City averages: {'name': 'Chicago', 'avg_temp_c': Decimal('20.90'), 'avg_precip_mm': Decimal('2.89'), 'avg_wind_kmh': Decimal('18.20')}
+2026-10-24 17:43:49,673 INFO City averages: {'name': 'New York', 'avg_temp_c': Decimal('18.84'), 'avg_precip_mm': Decimal('0.15'), 'avg_wind_kmh': Decimal('14.60')}
+2026-10-24 17:43:49,695 INFO Pipeline load completed successfully.
+2026-10-24 17:48:45,495 INFO Weather pipeline started.
+2026-10-24 17:48:45,496 INFO Starting step: Fetch and clean weather data
+2026-10-24 17:48:53,638 INFO Completed step: Fetch and clean weather data
+2026-10-24 17:48:53,638 INFO Starting step: Load weather data into PostgreSQL
+2026-10-24 17:48:57,591 INFO Connected to PostgreSQL successfully.
+2026-10-24 17:48:57,614 INFO City records processed successfully.
+2026-10-24 17:48:57,690 INFO Observation rows processed: 21
+2026-10-24 17:48:57,692 INFO City count: 3
+2026-10-24 17:48:57,699 INFO Observation count: 24
+2026-10-24 17:48:57,702 INFO Observations missing temperature: 0
+2026-10-24 17:48:57,703 INFO Observations missing precipitation: 0
+2026-10-24 17:48:57,706 INFO Observations missing wind speed: 0
+2026-10-24 17:48:57,711 INFO City averages: {'name': 'Champaign', 'avg_temp_c': Decimal('21.66'), 'avg_precip_mm': Decimal('0.06'), 'avg_wind_kmh': Decimal('16.83')}
+2026-10-24 17:48:57,712 INFO City averages: {'name': 'Chicago', 'avg_temp_c': Decimal('20.90'), 'avg_precip_mm': Decimal('2.89'), 'avg_wind_kmh': Decimal('16.44')}
+2026-10-24 17:48:57,712 INFO City averages: {'name': 'New York', 'avg_temp_c': Decimal('18.84'), 'avg_precip_mm': Decimal('0.15'), 'avg_wind_kmh': Decimal('12.20')}
+2026-10-24 17:48:57,716 INFO Pipeline load completed successfully.
+2026-10-24 17:48:58,129 INFO Completed step: Load weather data into PostgreSQL
+2026-10-24 17:48:58,130 INFO Starting step: Update missing wind speeds
+2026-10-24 17:49:02,703 INFO Completed step: Update missing wind speeds
+2026-10-24 17:49:02,704 INFO Weather pipeline completed successfully.
+2026-10-24 17:52:31,052 INFO Weather pipeline started.
+2026-10-24 17:52:31,055 INFO Starting step: Fetch and clean weather data
+2026-10-24 17:52:40,129 INFO Completed step: Fetch and clean weather data
+2026-10-24 17:52:40,130 INFO Starting step: Load weather data into PostgreSQL
+2026-10-24 17:52:44,419 INFO Connected to PostgreSQL successfully.
+2026-10-24 17:52:44,443 INFO City records processed successfully.
+2026-10-24 17:52:44,519 INFO Observation rows processed: 21
+2026-10-24 17:52:44,524 INFO City count: 3
+2026-10-24 17:52:44,534 INFO Observation count: 24
+2026-10-24 17:52:44,538 INFO Observations missing temperature: 0
+2026-10-24 17:52:44,544 INFO Observations missing precipitation: 0
+2026-10-24 17:52:44,547 INFO Observations missing wind speed: 0
+2026-10-24 17:52:44,554 INFO City averages: {'name': 'Champaign', 'avg_temp_c': Decimal('21.66'), 'avg_precip_mm': Decimal('0.06'), 'avg_wind_kmh': Decimal('16.83')}
+2026-10-24 17:52:44,556 INFO City averages: {'name': 'Chicago', 'avg_temp_c': Decimal('20.90'), 'avg_precip_mm': Decimal('2.89'), 'avg_wind_kmh': Decimal('16.44')}
+2026-10-24 17:52:44,560 INFO City averages: {'name': 'New York', 'avg_temp_c': Decimal('18.84'), 'avg_precip_mm': Decimal('0.15'), 'avg_wind_kmh': Decimal('12.20')}
+2026-10-24 17:52:44,582 INFO Pipeline load completed successfully.
+2026-10-24 17:52:45,033 INFO Completed step: Load weather data into PostgreSQL
+2026-10-24 17:52:45,035 INFO Starting step: Update missing wind speeds
+2026-10-24 17:52:50,085 INFO Completed step: Update missing wind speeds
+2026-10-24 17:52:50,086 INFO Weather pipeline completed successfully.
+2026-10-24 17:55:00,896 INFO Weather pipeline started.
+2026-10-24 17:55:00,897 INFO Starting step: Fetch and clean weather data
+2026-10-24 17:55:10,297 INFO Completed step: Fetch and clean weather data
+2026-10-24 17:55:10,298 INFO Starting step: Load weather data into PostgreSQL
+2026-10-24 17:55:14,708 INFO Connected to PostgreSQL successfully.
+2026-10-24 17:55:14,735 INFO City records processed successfully.
+2026-10-24 17:55:14,824 INFO Observation rows processed: 21
+2026-10-24 17:55:14,828 INFO City count: 3
+2026-10-24 17:55:14,837 INFO Observation count: 24
+2026-10-24 17:55:14,840 INFO Observations missing temperature: 0
+2026-10-24 17:55:14,846 INFO Observations missing precipitation: 0
+2026-10-24 17:55:14,853 INFO Observations missing wind speed: 0
+2026-10-24 17:55:14,860 INFO City averages: {'name': 'Champaign', 'avg_temp_c': Decimal('21.66'), 'avg_precip_mm': Decimal('0.06'), 'avg_wind_kmh': Decimal('16.83')}
+2026-10-24 17:55:14,861 INFO City averages: {'name': 'Chicago', 'avg_temp_c': Decimal('20.90'), 'avg_precip_mm': Decimal('2.89'), 'avg_wind_kmh': Decimal('16.44')}
+2026-10-24 17:55:14,862 INFO City averages: {'name': 'New York', 'avg_temp_c': Decimal('18.84'), 'avg_precip_mm': Decimal('0.15'), 'avg_wind_kmh': Decimal('12.20')}
+2026-10-24 17:55:14,869 INFO Pipeline load completed successfully.
+2026-10-24 17:55:15,375 INFO Completed step: Load weather data into PostgreSQL
+2026-10-24 17:55:15,376 INFO Starting step: Update missing wind speeds
+2026-10-24 17:55:20,336 INFO Completed step: Update missing wind speeds
+2026-10-24 17:55:20,337 INFO Weather pipeline completed successfully.
+2026-10-24 18:04:05,801 INFO Weather pipeline started.
+2026-10-24 18:04:05,803 INFO Starting step: Fetch and clean weather data
+2026-10-24 18:04:17,438 INFO Completed step: Fetch and clean weather data
+2026-10-24 18:04:17,439 INFO Starting step: Load weather data into PostgreSQL
+2026-10-24 18:04:21,472 INFO Connected to PostgreSQL successfully.
+2026-10-24 18:04:21,496 INFO City records processed successfully.
+2026-10-24 18:04:21,579 INFO Observation rows processed: 21
+2026-10-24 18:04:21,581 INFO City count: 3
+2026-10-24 18:04:21,589 INFO Observation count: 24
+2026-10-24 18:04:21,591 INFO Observations missing temperature: 0
+2026-10-24 18:04:21,594 INFO Observations missing precipitation: 0
+2026-10-24 18:04:21,597 INFO Observations missing wind speed: 0
+2026-10-24 18:04:21,601 INFO City averages: {'name': 'Champaign', 'avg_temp_c': Decimal('21.66'), 'avg_precip_mm': Decimal('0.06'), 'avg_wind_kmh': Decimal('16.83')}
+2026-10-24 18:04:21,602 INFO City averages: {'name': 'Chicago', 'avg_temp_c': Decimal('20.90'), 'avg_precip_mm': Decimal('2.89'), 'avg_wind_kmh': Decimal('16.44')}
+2026-10-24 18:04:21,603 INFO City averages: {'name': 'New York', 'avg_temp_c': Decimal('18.84'), 'avg_precip_mm': Decimal('0.15'), 'avg_wind_kmh': Decimal('12.20')}
+2026-10-24 18:04:21,608 INFO Pipeline load completed successfully.
+2026-10-24 18:04:22,359 INFO Completed step: Load weather data into PostgreSQL
+2026-10-24 18:04:22,361 INFO Starting step: Update missing wind speeds
+2026-10-24 18:21:11,962 INFO Completed step: Update missing wind speeds
+2026-10-24 18:21:11,963 INFO Weather pipeline completed successfully.
+2026-10-24 19:29:20,959 INFO Weather pipeline started.
+2026-10-24 19:29:20,960 INFO Starting step: Fetch and clean weather data
+2026-10-24 19:29:30,650 INFO Completed step: Fetch and clean weather data
+2026-10-24 19:29:30,651 INFO Starting step: Load weather data into PostgreSQL
+2026-10-24 19:29:34,985 INFO Connected to PostgreSQL successfully.
+2026-10-24 19:29:35,010 INFO City records processed successfully.
+2026-10-24 19:29:35,085 INFO Observation rows processed: 21
+2026-10-24 19:29:35,089 INFO City count: 3
+2026-10-24 19:29:35,097 INFO Observation count: 24
+2026-10-24 19:29:35,099 INFO Observations missing temperature: 0
+2026-10-24 19:29:35,102 INFO Observations missing precipitation: 0
+2026-10-24 19:29:35,105 INFO Observations missing wind speed: 0
+2026-10-24 19:29:35,110 INFO City averages: {'name': 'Champaign', 'avg_temp_c': Decimal('21.66'), 'avg_precip_mm': Decimal('0.06'), 'avg_wind_kmh': Decimal('16.83')}
+2026-10-24 19:29:35,111 INFO City averages: {'name': 'Chicago', 'avg_temp_c': Decimal('20.90'), 'avg_precip_mm': Decimal('2.89'), 'avg_wind_kmh': Decimal('16.44')}
+2026-10-24 19:29:35,113 INFO City averages: {'name': 'New York', 'avg_temp_c': Decimal('18.84'), 'avg_precip_mm': Decimal('0.15'), 'avg_wind_kmh': Decimal('12.20')}
+2026-10-24 19:29:35,117 INFO Pipeline load completed successfully.
+2026-10-24 19:29:35,525 INFO Completed step: Load weather data into PostgreSQL
+2026-10-24 19:29:35,526 INFO Starting step: Update missing wind speeds
+2026-10-24 19:29:40,451 INFO Completed step: Update missing wind speeds
+2026-10-24 19:29:40,453 INFO Weather pipeline completed successfully.
+2026-10-25 18:16:37,752 INFO Weather pipeline started.
+2026-10-25 18:16:37,754 INFO Starting step: Fetch and clean weather data
+2026-10-25 18:16:50,859 INFO Completed step: Fetch and clean weather data
+2026-10-25 18:16:50,861 INFO Starting step: Load weather data into PostgreSQL
+2026-10-25 18:18:20,696 INFO Connected to PostgreSQL successfully.
+2026-10-25 18:18:20,719 INFO City records processed successfully.
+2026-10-25 18:18:20,778 INFO Observation rows processed: 21
+2026-10-25 18:18:20,781 INFO City count: 3
+2026-10-25 18:18:20,788 INFO Observation count: 24
+2026-10-25 18:18:20,789 INFO Observations missing temperature: 0
+2026-10-25 18:18:20,791 INFO Observations missing precipitation: 0
+2026-10-25 18:18:20,792 INFO Observations missing wind speed: 0
+2026-10-25 18:18:20,796 INFO City averages: {'name': 'Champaign', 'avg_temp_c': Decimal('21.66'), 'avg_precip_mm': Decimal('0.06'), 'avg_wind_kmh': Decimal('16.83')}
+2026-10-25 18:18:20,806 INFO City averages: {'name': 'Chicago', 'avg_temp_c': Decimal('20.90'), 'avg_precip_mm': Decimal('2.89'), 'avg_wind_kmh': Decimal('16.44')}
+2026-10-25 18:18:20,806 INFO City averages: {'name': 'New York', 'avg_temp_c': Decimal('18.84'), 'avg_precip_mm': Decimal('0.15'), 'avg_wind_kmh': Decimal('12.20')}
+2026-10-25 18:18:20,811 INFO Pipeline load completed successfully.
+2026-10-25 18:19:07,273 INFO Weather pipeline started.
+2026-10-25 18:19:07,274 INFO Starting step: Fetch and clean weather data
+2026-10-25 18:19:13,621 INFO Completed step: Fetch and clean weather data
+2026-10-25 18:19:13,622 INFO Starting step: Load weather data into PostgreSQL
+2026-10-25 18:19:16,496 INFO Connected to PostgreSQL successfully.
+2026-10-25 18:19:16,512 INFO City records processed successfully.
+2026-10-25 18:19:16,565 INFO Observation rows processed: 21
+2026-10-25 18:19:16,567 INFO City count: 3
+2026-10-25 18:19:16,574 INFO Observation count: 24
+2026-10-25 18:19:16,576 INFO Observations missing temperature: 0
+2026-10-25 18:19:16,578 INFO Observations missing precipitation: 0
+2026-10-25 18:19:16,581 INFO Observations missing wind speed: 0
+2026-10-25 18:19:16,584 INFO City averages: {'name': 'Champaign', 'avg_temp_c': Decimal('21.66'), 'avg_precip_mm': Decimal('0.06'), 'avg_wind_kmh': Decimal('16.83')}
+2026-10-25 18:19:16,586 INFO City averages: {'name': 'Chicago', 'avg_temp_c': Decimal('20.90'), 'avg_precip_mm': Decimal('2.89'), 'avg_wind_kmh': Decimal('16.44')}
+2026-10-25 18:19:16,587 INFO City averages: {'name': 'New York', 'avg_temp_c': Decimal('18.84'), 'avg_precip_mm': Decimal('0.15'), 'avg_wind_kmh': Decimal('12.20')}
+2026-10-25 18:19:16,592 INFO Pipeline load completed successfully.
+2026-10-25 18:19:17,035 INFO Completed step: Load weather data into PostgreSQL
+2026-10-25 18:19:17,036 INFO Starting step: Update missing wind speeds
+2026-10-25 18:19:20,808 INFO Completed step: Update missing wind speeds
+2026-10-25 18:19:20,809 INFO Weather pipeline completed successfully.
+2026-10-29 12:53:39,665 INFO Weather pipeline started.
+2026-10-29 12:53:39,665 INFO Starting step: Fetch and clean weather data
+2026-10-29 12:53:44,398 INFO Completed step: Fetch and clean weather data
+2026-10-29 12:53:44,402 INFO Starting step: Load weather data into PostgreSQL
+2026-10-29 12:53:45,825 ERROR Weather pipeline failed.
+Traceback (most recent call last):
+  File "C:\Users\1234\OneDrive\Desktop\weather-data-pipeline\src\main.py", line 56, in main
+    run_step(
+  File "C:\Users\1234\OneDrive\Desktop\weather-data-pipeline\src\main.py", line 38, in run_step
+    raise RuntimeError(
+RuntimeError: Step failed: Load weather data into PostgreSQL (exit code 1)
+2026-10-29 12:55:01,695 INFO Weather pipeline started.
+2026-10-29 12:55:01,696 INFO Starting step: Fetch and clean weather data
+2026-10-29 12:55:06,682 INFO Completed step: Fetch and clean weather data
+2026-10-29 12:55:06,683 INFO Starting step: Load weather data into PostgreSQL
+2026-10-29 12:55:10,250 INFO Connected to PostgreSQL successfully.
+2026-10-29 12:55:10,270 INFO City records processed successfully.
+2026-10-29 12:55:10,315 INFO Observation rows processed: 21
+2026-10-29 12:55:10,317 INFO City count: 3
+2026-10-29 12:55:10,324 INFO Observation count: 24
+2026-10-29 12:55:10,326 INFO Observations missing temperature: 0
+2026-10-29 12:55:10,328 INFO Observations missing precipitation: 0
+2026-10-29 12:55:10,330 INFO Observations missing wind speed: 0
+2026-10-29 12:55:10,333 INFO City averages: {'name': 'Champaign', 'avg_temp_c': Decimal('21.66'), 'avg_precip_mm': Decimal('0.06'), 'avg_wind_kmh': Decimal('16.83')}
+2026-10-29 12:55:10,336 INFO City averages: {'name': 'Chicago', 'avg_temp_c': Decimal('20.90'), 'avg_precip_mm': Decimal('2.89'), 'avg_wind_kmh': Decimal('16.44')}
+2026-10-29 12:55:10,336 INFO City averages: {'name': 'New York', 'avg_temp_c': Decimal('18.84'), 'avg_precip_mm': Decimal('0.15'), 'avg_wind_kmh': Decimal('12.20')}
+2026-10-29 12:55:10,338 INFO Pipeline load completed successfully.
+2026-10-29 12:55:10,540 INFO Completed step: Load weather data into PostgreSQL
+2026-10-29 12:55:10,540 INFO Starting step: Update missing wind speeds
+2026-10-29 12:55:12,997 INFO Completed step: Update missing wind speeds
+2026-10-29 12:55:12,997 INFO Weather pipeline completed successfully.
+2026-10-29 13:04:30,757 INFO Weather pipeline started.
+2026-10-29 13:04:30,757 INFO Starting step: Fetch and clean weather data
+2026-10-29 13:04:35,670 INFO Completed step: Fetch and clean weather data
+2026-10-29 13:04:35,670 INFO Starting step: Load weather data into PostgreSQL
+2026-10-29 13:04:37,831 INFO Connected to PostgreSQL successfully.
+2026-10-29 13:04:37,840 INFO City records processed successfully.
+2026-10-29 13:04:37,901 INFO Observation rows processed: 0
+2026-10-29 13:04:37,902 INFO City count: 3
+2026-10-29 13:04:37,905 INFO Observation count: 24
+2026-10-29 13:04:37,907 INFO Observations missing temperature: 0
+2026-10-29 13:04:37,908 INFO Observations missing precipitation: 0
+2026-10-29 13:04:37,910 INFO Observations missing wind speed: 0
+2026-10-29 13:04:37,912 INFO City averages: {'name': 'Champaign', 'avg_temp_c': Decimal('21.66'), 'avg_precip_mm': Decimal('0.06'), 'avg_wind_kmh': Decimal('16.83')}
+2026-10-29 13:04:37,912 INFO City averages: {'name': 'Chicago', 'avg_temp_c': Decimal('20.90'), 'avg_precip_mm': Decimal('2.89'), 'avg_wind_kmh': Decimal('16.44')}
+2026-10-29 13:04:37,913 INFO City averages: {'name': 'New York', 'avg_temp_c': Decimal('18.84'), 'avg_precip_mm': Decimal('0.15'), 'avg_wind_kmh': Decimal('12.20')}
+2026-10-29 13:04:37,916 INFO Pipeline load completed successfully.
+2026-10-29 13:04:38,093 INFO Completed step: Load weather data into PostgreSQL
+2026-10-29 13:04:38,093 INFO Starting step: Update missing wind speeds
+2026-10-29 13:04:40,438 INFO Completed step: Update missing wind speeds
+2026-10-29 13:04:40,438 INFO Weather pipeline completed successfully.

@@ -17,3 +17,6 @@ htmlcov/
 .vscode/
 .DS_Store
 Thumbs.db
+
+.venv-dbt/
+weather_dbt/target/

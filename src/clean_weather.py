@@ -1,15 +1,20 @@
 
+"""Fetch, validate, clean, and save historical weather data."""
+
 import json
+import logging
 from pathlib import Path
 
 import pandas as pd
 import requests
 
-
 API_URL = "https://archive-api.open-meteo.com/v1/archive"
-
 START_DATE = "2025-10-01"
 END_DATE = "2025-10-07"
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+RAW_DIR = PROJECT_ROOT / "data" / "raw"
+PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
 
 CITIES = {
     "Champaign": {
@@ -34,153 +39,242 @@ COLUMN_RENAME = {
     "temperature_2m_max": "temperature_max_c",
     "temperature_2m_min": "temperature_min_c",
     "precipitation_sum": "precipitation_mm",
+    "wind_speed_10m_max": "wind_speed_max_kmh",
 }
 
 WEATHER_COLUMNS = [
     "temperature_max_c",
     "temperature_min_c",
     "precipitation_mm",
+    "wind_speed_max_kmh",
 ]
 
+REQUIRED_API_FIELDS = list(COLUMN_RENAME)
+OUTPUT_COLUMNS = ["city", "date", *WEATHER_COLUMNS]
 
-def fetch_city_weather(city, location):
-    """Fetch historical weather and save the original JSON response."""
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(message)s",
+)
+logger = logging.getLogger(__name__)
+
+
+def validate_response(payload, city):
+    """Validate the structure and required fields of an API response."""
+    if not isinstance(payload, dict):
+        raise ValueError(f"{city}: API response must be a JSON object")
+
+    daily = payload.get("daily")
+    if not isinstance(daily, dict):
+        raise ValueError(f"{city}: response has no valid 'daily' object")
+
+    missing = set(REQUIRED_API_FIELDS) - set(daily)
+    if missing:
+        raise ValueError(
+            f"{city}: missing required daily fields: {sorted(missing)}"
+        )
+
+    lengths = {}
+    for field in REQUIRED_API_FIELDS:
+        values = daily[field]
+        if not isinstance(values, list):
+            raise ValueError(f"{city}: daily field '{field}' must be a list")
+        lengths[field] = len(values)
+
+    if not lengths["time"]:
+        raise ValueError(f"{city}: API returned no daily records")
+
+    if len(set(lengths.values())) != 1:
+        raise ValueError(
+            f"{city}: daily fields have inconsistent lengths: {lengths}"
+        )
+
+    return payload
+
+
+def fetch_data(city, location, session=None):
+    """Fetch and validate historical weather data for one city."""
+    client = session if session is not None else requests
 
     params = {
         "latitude": location["latitude"],
         "longitude": location["longitude"],
         "start_date": START_DATE,
         "end_date": END_DATE,
-        "daily": list(COLUMN_RENAME.keys())[1:],
+        "daily": [field for field in REQUIRED_API_FIELDS if field != "time"],
+        "wind_speed_unit": "kmh",
         "timezone": location["timezone"],
     }
 
-    response = requests.get(API_URL, params=params, timeout=30)
-
-    print(f"{city}: HTTP {response.status_code}")
+    response = client.get(API_URL, params=params, timeout=30)
     response.raise_for_status()
 
-    raw_json = response.json()
+    try:
+        payload = response.json()
+    except (ValueError, json.JSONDecodeError) as exc:
+        raise ValueError(f"{city}: API returned invalid JSON") from exc
 
-    if "daily" not in raw_json:
-        raise ValueError(f"No daily weather data returned for {city}")
+    validate_response(payload, city)
+    save_raw_response(city, payload)
+    logger.info("Fetched and validated %s weather data", city)
 
-    # Save the original API response without transforming it.
-    raw_dir = Path("data/raw")
-    raw_dir.mkdir(parents=True, exist_ok=True)
-
-    raw_path = raw_dir / f"{city.lower().replace(' ', '_')}.json"
-
-    with raw_path.open("w", encoding="utf-8") as file:
-        json.dump(raw_json, file, indent=2)
-
-    print(f"Saved raw response: {raw_path}")
-
-    # Convert the daily JSON arrays into rows.
-    daily_data = raw_json["daily"]
-    city_df = pd.DataFrame(daily_data)
-
-    city_df["city"] = city
-
-    return city_df
+    return payload
 
 
-def clean_weather_dataframe(df):
-    """Standardize, validate, and clean a weather DataFrame."""
+def save_raw_response(city, payload):
+    """Save the validated API response without modifying it."""
+    RAW_DIR.mkdir(parents=True, exist_ok=True)
+    filename = f"{city.lower().replace(' ', '_')}.json"
+    path = RAW_DIR / filename
 
-    cleaned = df.copy()
+    with path.open("w", encoding="utf-8") as file:
+        json.dump(payload, file, indent=2)
 
-    # Standardize column names.
-    cleaned = cleaned.rename(columns=COLUMN_RENAME)
+    logger.info("Saved raw response: %s", path)
 
-    # Ensure the expected columns are present.
-    required_columns = ["city", "date"] + WEATHER_COLUMNS
-    missing_columns = set(required_columns) - set(cleaned.columns)
 
-    if missing_columns:
-        raise ValueError(
-            f"Missing required columns: {sorted(missing_columns)}"
+def clean_records(payloads):
+    """Convert validated city responses into standardized daily records."""
+    frames = []
+
+    for city, payload in payloads:
+        validate_response(payload, city)
+        frame = pd.DataFrame(payload["daily"]).rename(
+            columns=COLUMN_RENAME
         )
+        frame["city"] = city
+        frames.append(frame[OUTPUT_COLUMNS])
 
-    # Convert dates and measurements to consistent types.
-    cleaned["date"] = pd.to_datetime(
-        cleaned["date"], errors="coerce"
-    )
+    if not frames:
+        raise ValueError("No weather responses were provided")
+
+    cleaned = pd.concat(frames, ignore_index=True)
+
+    cleaned["date"] = pd.to_datetime(cleaned["date"], errors="coerce")
 
     for column in WEATHER_COLUMNS:
         cleaned[column] = pd.to_numeric(
             cleaned[column], errors="coerce"
         )
 
-    records_before = len(cleaned)
+    before = len(cleaned)
 
-    # Check missing values before cleaning.
-    print("\nMissing values before cleaning:")
-    print(cleaned[required_columns].isna().sum())
+    # Missing or malformed values cannot become usable measurements.
+    cleaned = cleaned.dropna(subset=OUTPUT_COLUMNS)
 
-    # A duplicate is defined as the same city and date.
-    duplicates_before = cleaned.duplicated(
-        subset=["city", "date"]
-    ).sum()
+    # Reject physically invalid precipitation/wind and reversed min/max.
+    valid_measurements = (
+        (cleaned["precipitation_mm"] >= 0)
+        & (cleaned["wind_speed_max_kmh"] >= 0)
+        & (
+            cleaned["temperature_min_c"]
+            <= cleaned["temperature_max_c"]
+        )
+    )
+    cleaned = cleaned.loc[valid_measurements].copy()
 
-    print(f"\nDuplicate city/date records: {duplicates_before}")
-
-    # Remove rows without a city, valid date, or measurements.
-    cleaned = cleaned.dropna(subset=required_columns)
-
-    # Keep one record per city/date.
+    # A daily record is identified by city + date.
     cleaned = cleaned.drop_duplicates(
-        subset=["city", "date"],
-        keep="first",
+        subset=["city", "date"], keep="first"
     )
 
-    # Sort for consistent downstream processing.
+    start = pd.Timestamp(START_DATE)
+    end = pd.Timestamp(END_DATE)
+    cleaned = cleaned.loc[cleaned["date"].between(start, end)]
+
     cleaned = cleaned.sort_values(
         ["city", "date"]
     ).reset_index(drop=True)
 
-    records_after = len(cleaned)
+    if cleaned.empty:
+        raise ValueError("No valid weather records remain after cleaning")
 
-    print("\nMissing values after cleaning:")
-    print(cleaned[required_columns].isna().sum())
-
-    print("\nCleaning summary")
-    print(f"Records before: {records_before}")
-    print(f"Records after:  {records_after}")
-    print(f"Records removed: {records_before - records_after}")
+    logger.info(
+        "Cleaning complete: input=%d output=%d removed=%d",
+        before,
+        len(cleaned),
+        before - len(cleaned),
+    )
 
     return cleaned
 
 
+# Keep the existing function name for compatibility with older tests/scripts.
+def clean_weather_dataframe(df):
+    """Clean an already flattened weather DataFrame."""
+    required = set(OUTPUT_COLUMNS)
+    missing = required - set(df.columns)
+    if missing:
+        raise ValueError(f"Missing required columns: {sorted(missing)}")
+
+    cleaned = df[OUTPUT_COLUMNS].copy()
+    cleaned["date"] = pd.to_datetime(cleaned["date"], errors="coerce")
+
+    for column in WEATHER_COLUMNS:
+        cleaned[column] = pd.to_numeric(
+            cleaned[column], errors="coerce"
+        )
+
+    cleaned = cleaned.dropna(subset=OUTPUT_COLUMNS)
+    cleaned = cleaned.loc[
+        (cleaned["precipitation_mm"] >= 0)
+        & (cleaned["wind_speed_max_kmh"] >= 0)
+        & (
+            cleaned["temperature_min_c"]
+            <= cleaned["temperature_max_c"]
+        )
+    ]
+    cleaned = cleaned.drop_duplicates(
+        subset=["city", "date"], keep="first"
+    )
+
+    start = pd.Timestamp(START_DATE)
+    end = pd.Timestamp(END_DATE)
+    cleaned = cleaned.loc[cleaned["date"].between(start, end)]
+
+    return cleaned.sort_values(
+        ["city", "date"]
+    ).reset_index(drop=True)
+
+
+def save_cleaned_data(df):
+    """Write standardized records to the processed CSV."""
+    PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
+    output_path = PROCESSED_DIR / "weather_cleaned.csv"
+    df.to_csv(output_path, index=False)
+    logger.info("Saved %d cleaned records to %s", len(df), output_path)
+    return output_path
+
+
+def report_success(df, output_path):
+    """Report a successful ingestion run."""
+    logger.info(
+        "Weather ingestion succeeded: %d records saved to %s",
+        len(df),
+        output_path,
+    )
+
+
+def report_failure(exc):
+    """Report a failed ingestion run."""
+    logger.exception("Weather ingestion failed: %s", exc)
+
+
 def main():
-    city_dataframes = []
+    """Run the fetch, validate, clean, and save stages."""
+    try:
+        payloads = []
+        for city, location in CITIES.items():
+            logger.info("Fetching weather for %s", city)
+            payloads.append((city, fetch_data(city, location)))
 
-    for city, location in CITIES.items():
-        print(f"\nFetching weather for {city}...")
+        cleaned = clean_records(payloads)
+        output_path = save_cleaned_data(cleaned)
+        report_success(cleaned, output_path)
 
-        city_df = fetch_city_weather(city, location)
-        city_dataframes.append(city_df)
-
-    # Combine all three cities into one DataFrame.
-    raw_df = pd.concat(city_dataframes, ignore_index=True)
-
-    print(f"\nTotal raw records: {len(raw_df)}")
-    print("\nRaw DataFrame preview:")
-    print(raw_df.head())
-
-    # Clean the combined dataset.
-    cleaned_df = clean_weather_dataframe(raw_df)
-
-    # Save cleaned data separately from the raw JSON.
-    output_dir = Path("data/processed")
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    output_path = output_dir / "weather_cleaned.csv"
-    cleaned_df.to_csv(output_path, index=False)
-
-    print(f"\nCleaned CSV saved to: {output_path.resolve()}")
-    print("\nCleaned DataFrame preview:")
-    print(cleaned_df.head(10).to_string(index=False))
+    except Exception as exc:
+        report_failure(exc)
+        raise
 
 
 if __name__ == "__main__":

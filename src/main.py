@@ -1,44 +1,74 @@
 
-import pandas as pd
+"""Run the complete weather data pipeline."""
+
+import logging
+import subprocess
+import sys
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+LOG_DIR = PROJECT_ROOT / "logs"
+LOG_DIR.mkdir(parents=True, exist_ok=True)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler(LOG_DIR / "pipeline.log", encoding="utf-8"),
+    ],
+)
+
+logger = logging.getLogger(__name__)
+
+
+def run_step(description, script_name):
+    """Run a pipeline script and stop if it fails."""
+    script_path = PROJECT_ROOT / "src" / script_name
+
+    logger.info("Starting step: %s", description)
+
+    result = subprocess.run(
+        [sys.executable, str(script_path)],
+        cwd=PROJECT_ROOT,
+        check=False,
+    )
+
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"Step failed: {description} (exit code {result.returncode})"
+        )
+
+    logger.info("Completed step: %s", description)
 
 
 def main():
-    print("Welcome to the Weather Data Engineering Pipeline!")
+    logger.info("Weather pipeline started.")
 
-    # Sample weather data for three cities
-    weather_data = [
-        {
-            "city": "Champaign",
-            "date": "2026-10-18",
-            "temperature_max_c": 18.5,
-            "temperature_min_c": 7.2,
-            "precipitation_mm": 0.0,
-        },
-        {
-            "city": "Chicago",
-            "date": "2026-10-18",
-            "temperature_max_c": 16.3,
-            "temperature_min_c": 9.1,
-            "precipitation_mm": 2.4,
-        },
-        {
-            "city": "New York",
-            "date": "2026-10-18",
-            "temperature_max_c": 19.7,
-            "temperature_min_c": 12.0,
-            "precipitation_mm": 1.2,
-        },
-    ]
+    try:
+        # Fetch all three cities, clean the data, and save the CSV.
+        run_step(
+            "Fetch and clean weather data",
+            "clean_weather.py",
+        )
 
-    # Convert the sample data into a Pandas DataFrame
-    df = pd.DataFrame(weather_data)
-    df["date"] = pd.to_datetime(df["date"])
+        # Load cleaned observations into PostgreSQL.
+        run_step(
+            "Load weather data into PostgreSQL",
+            "load_weather.py",
+        )
 
-    print("\nSample Weather Dataset:")
-    print(df.to_string(index=False))
+        # Fill wind speeds for existing observations where missing.
+        run_step(
+            "Update missing wind speeds",
+            "update_wind_speed.py",
+        )
 
-    print(f"\nTotal records: {len(df)}")
-    print(f"Number of cities: {df['city'].nunique()}")
+        logger.info("Weather pipeline completed successfully.")
+
+    except Exception:
+        logger.exception("Weather pipeline failed.")
+        raise
 
 
 if __name__ == "__main__":
