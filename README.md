@@ -1,365 +1,432 @@
 # Weather Data Engineering Pipeline
 
-A Python ETL pipeline that fetches historical weather data from the Open-Meteo API, cleans it using Pandas, stores it in PostgreSQL, and transforms it into analytics-ready datasets using dbt.
+An end-to-end data engineering project that collects historical weather data from the Open-Meteo API, cleans and validates it using Python and Pandas, loads it into PostgreSQL, and transforms it using dbt.
+
+The project supports both **local execution** and **Docker-based deployment**.
 
 ## Project Overview
 
-This project demonstrates an end-to-end data engineering workflow:
+This pipeline automates the collection, cleaning, storage, and transformation of historical weather observations for selected cities.
 
-1. **Extract:** Fetch historical weather data from the Open-Meteo API.
-2. **Transform:** Clean and validate weather data using Python and Pandas.
-3. **Load:** Store weather observations in PostgreSQL.
-4. **Model:** Use dbt to create staging views and analytical data marts.
-5. **Test:** Run automated Python and dbt data quality tests.
-6. **Analyze:** Use SQL queries and analytics-ready tables to identify weather trends.
+### Cities Covered
+- Champaign, USA
+- Chicago, USA
+- New York, USA
+
+### Data Period
+October 1, 2025 – October 7, 2025
+
+### Data Source
+[Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api)
 
 ## Architecture
 
-```mermaid
-flowchart TD
-    A[Open-Meteo API] --> B[Python Data Pipeline]
-    B --> C[Raw JSON Files]
-    B --> D[Cleaned CSV Files]
-    C --> E[Data Cleaning and Validation]
-    D --> E
-    E --> F[PostgreSQL Database]
-    F --> G[dbt Sources]
-    G --> H[Staging View]
-    H --> I[Daily City Weather Mart]
-    I --> J[SQL Analytics and Dashboards]
-
-    K[Python Tests] -.-> E
-    L[dbt Data Quality Tests] -.-> H
-    L -.-> I
+```text
+Open-Meteo Historical Weather API
+              |
+              v
+       Data Ingestion
+        (Python)
+              |
+              v
+        Raw JSON Data
+         data/raw/
+              |
+              v
+      Data Cleaning
+        (Pandas)
+              |
+              v
+       Cleaned CSV
+      data/processed/
+              |
+              v
+       PostgreSQL
+              |
+              v
+        dbt Models
+              |
+              v
+       Analytics Layer
 ```
-
-### Pipeline Layers
-
-- **Ingestion:** Python retrieves historical weather data from the Open-Meteo API.
-- **Raw data:** Original API responses are saved as JSON files for traceability.
-- **Processing:** Pandas cleans and validates the data and generates processed CSV files.
-- **Storage:** PostgreSQL stores city information and weather observations.
-- **Staging:** dbt creates the `analytics.stg_weather_observations` view by joining weather observations with city information.
-- **Analytics marts:** dbt builds the `analytics.daily_city_weather` table, aggregating weather measurements by city and date.
-- **Data quality:** Python tests and dbt tests help validate the pipeline and transformed data.
 
 ## Technologies Used
 
-- Python
-- Pandas
-- Open-Meteo API
-- PostgreSQL 18
-- SQLAlchemy
-- psycopg
-- python-dotenv
-- pytest
-- dbt Core
-- dbt-postgres
-- SQL
-- Git and GitHub
-
-## Weather Data
-
-The pipeline collects historical daily weather data for:
-
-- Champaign
-- Chicago
-- New York
-
-**Date range:** October 1–7, 2025
-
-Measurements include:
-
-- Maximum temperature (°C)
-- Minimum temperature (°C)
-- Precipitation (mm)
-- Maximum wind speed (km/h)
-
-The processed dataset contains 21 daily records across three cities.
+| Technology | Purpose |
+|---|---|
+| Python 3.12 | Pipeline development |
+| Pandas | Data cleaning and transformation |
+| Requests | API ingestion |
+| PostgreSQL | Relational data storage |
+| SQLAlchemy | Database connectivity |
+| dbt | Data transformation and testing |
+| Docker | Application containerization |
+| Docker Compose | Multi-container orchestration |
+| Pytest | Automated testing |
+| Git & GitHub | Version control |
 
 ## Project Structure
 
 ```text
 weather-data-pipeline/
+│
 ├── data/
 │   ├── raw/
 │   └── processed/
+│
+├── init/
+│   └── 01_schema.sql
+│
 ├── logs/
-├── sql/
-│   ├── schema.sql
-│   ├── sample_data.sql
-│   ├── analytical_queries.sql
-│   └── layered_schema.sql
+│
 ├── src/
-│   ├── clean_weather.py
-│   ├── fetch_weather.py
-│   ├── load_weather.py
 │   ├── main.py
-│   ├── setup_database.py
+│   ├── clean_weather.py
+│   ├── load_weather.py
 │   └── update_wind_speed.py
+│
 ├── tests/
+│   ├── test_ingestion.py
+│   ├── test_load_weather.py
 │   └── test_weather_pipeline.py
+│
 ├── weather_dbt/
 │   ├── models/
-│   │   ├── staging/
-│   │   │   ├── _sources.yml
-│   │   │   └── stg_weather_observations.sql
-│   │   └── marts/
-│   │       └── daily_city_weather.sql
-│   ├── dbt_project.yml
-│   └── README.md
+│   └── dbt_project.yml
+│
+├── .dockerignore
+├── .env.example
 ├── .gitignore
-├── .env
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
 └── README.md
 ```
 
-*Note: The structure above represents the main project files. Your local project may contain additional files.*
+## Features
 
-## Installation
+- Retrieves historical weather data using the Open-Meteo API.
+- Stores raw API responses as JSON files.
+- Validates API responses before processing.
+- Cleans and standardizes weather measurements using Pandas.
+- Handles missing values, invalid measurements, and duplicate records.
+- Loads city and observation records into PostgreSQL.
+- Uses database constraints to prevent duplicate observations.
+- Maintains pipeline execution logs.
+- Transforms raw database tables into analytical models using dbt.
+- Includes automated tests using Pytest.
+- Supports Docker-based deployment with PostgreSQL.
 
-### 1. Clone the Repository
+## Database Schema
+
+### 1. cities
+
+Stores information about the cities being monitored.
+
+| Column | Description |
+|---|---|
+| city_id | Primary key |
+| name | City name |
+| country | Country |
+| latitude | Geographic latitude |
+| longitude | Geographic longitude |
+
+### 2. weather_observations
+
+Stores daily weather observations.
+
+| Column | Description |
+|---|---|
+| observation_id | Primary key |
+| city_id | Foreign key referencing cities |
+| observation_timestamp | Observation date |
+| temperature_c | Temperature in Celsius |
+| precipitation_mm | Precipitation in millimeters |
+| wind_speed_kmh | Wind speed in kilometers per hour |
+
+**Note:** The pipeline calculates `temperature_c` as the midpoint of daily maximum and minimum temperatures because the source data does not provide a daily mean temperature in the selected fields. This is an estimate, not an observed daily average.
+
+## Getting Started — Local Setup
+
+### Prerequisites
+
+- Python 3.12+
+- PostgreSQL
+- Git
+
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/alisharawat56/weather-data-pipeline.git
+
 cd weather-data-pipeline
 ```
 
-### 2. Create a Python Virtual Environment
+### 2. Create a virtual environment
 
-On Windows PowerShell:
+Windows PowerShell:
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+.venv\Scripts\Activate.ps1
 ```
 
-### 3. Install Python Dependencies
+### 3. Install dependencies
 
-```powershell
-python -m pip install pandas SQLAlchemy "psycopg[binary]" python-dotenv requests pytest
+```bash
+pip install -r requirements.txt
 ```
 
-### 4. Configure Environment Variables
+### 4. Configure PostgreSQL
 
-Create a `.env` file in the project root:
+Create a PostgreSQL database named:
 
-```dotenv
-PGHOST=localhost
+```sql
+CREATE DATABASE weather_db;
+```
+
+Create the required tables using the schema in `init/01_schema.sql`, or use your existing database schema.
+
+### 5. Configure environment variables
+
+Create a `.env` file in the project root.
+
+Example:
+
+```env
+PGHOST=127.0.0.1
 PGPORT=5432
 PGDATABASE=weather_db
 PGUSER=postgres
 PGPASSWORD=your_local_password
 ```
 
-Replace `your_local_password` with your local PostgreSQL password.
+Replace the password with your actual PostgreSQL password.
 
-**Important:** Add `.env` to `.gitignore`. Never commit database credentials to GitHub.
+### 6. Run the pipeline
 
-### 5. Set Up PostgreSQL
-
-Create a PostgreSQL database named `weather_db`.
-
-If the database tables do not exist, execute `sql/schema.sql` or use the project's database setup script.
-
-## Run the Python Pipeline
-
-From the project root:
-
-```powershell
+```bash
 python src/main.py
 ```
 
-The pipeline fetches weather data, cleans and validates it, saves the processed CSV, loads observations into PostgreSQL, and logs its progress.
+The pipeline will:
+1. Fetch historical weather data.
+2. Save raw API responses.
+3. Clean and validate the data.
+4. Load records into PostgreSQL.
+5. Update missing wind-speed values where applicable.
+6. Log pipeline execution details.
 
-Output locations:
+## Docker Setup
 
-- Raw data: `data/raw/`
-- Processed data: `data/processed/weather_cleaned.csv`
-- Pipeline logs: `logs/pipeline.log`
+Docker Compose allows the application and PostgreSQL database to run in separate containers.
 
-## Run Python Tests
+### Prerequisites
 
-Run the automated tests:
+- Docker Desktop
+- WSL 2 enabled on Windows
+- Docker Compose
+
+### 1. Configure environment variables
+
+Copy the example environment file:
 
 ```powershell
-python -m pytest tests -v
+Copy-Item .env.example .env
 ```
 
-The tests validate expected columns, duplicate city/date records, date ranges, and other configured data quality rules.
+Open `.env` and configure your password:
+
+```env
+POSTGRES_PASSWORD=your_strong_local_password
+```
+
+Keep `.env` private. Never commit it to GitHub.
+
+### 2. Build and start the containers
+
+From the project root:
+
+```bash
+docker compose up --build
+```
+
+This command:
+- Builds the Python application image.
+- Downloads the PostgreSQL image if needed.
+- Creates the PostgreSQL database container.
+- Waits for the database health check.
+- Runs the weather pipeline.
+
+### 3. Verify containers
+
+```bash
+docker compose ps -a
+```
+
+Expected status after a successful one-time pipeline run:
+
+- `weather_postgres` — running and healthy.
+- `weather_pipeline` — exited with code `0`.
+
+An exit code of `0` indicates successful execution.
+
+### 4. View application logs
+
+```bash
+docker compose logs app
+```
+
+Follow logs in real time:
+
+```bash
+docker compose logs -f app
+```
+
+### 5. Access PostgreSQL inside Docker
+
+```bash
+docker exec -it weather_postgres psql -U postgres -d weather_db
+```
+
+List tables:
+
+```sql
+\dt
+```
+
+Check observation count:
+
+```sql
+SELECT COUNT(*) FROM weather_observations;
+```
+
+Exit PostgreSQL:
+
+```sql
+\q
+```
+
+### 6. Stop containers
+
+```bash
+docker compose down
+```
+
+This stops and removes the containers but preserves the PostgreSQL data volume.
+
+To remove the database volume and its data as well:
+
+```bash
+docker compose down -v
+```
+
+**Warning:** The second command permanently deletes the Docker-managed PostgreSQL data volume.
 
 ## dbt Transformations
 
-The project uses dbt Core with the PostgreSQL adapter to transform stored weather observations into analytics-ready data.
+The project uses dbt to transform PostgreSQL data into analytical models.
 
-### dbt Models
+### Models
 
-| Model | Materialization | Purpose |
-|---|---|---|
-| `stg_weather_observations` | View | Joins weather observations with city names and prepares the observation date |
-| `daily_city_weather` | Table | Aggregates daily weather metrics by city and date |
+**stg_weather_observations**
 
-The staging model reads from the existing PostgreSQL tables:
+A staging model that prepares weather observation data for analysis.
 
-- `public.cities`
-- `public.weather_observations`
+**daily_city_weather**
 
-The analytics models are created in the `analytics` schema.
+An analytical model that summarizes daily weather information by city.
 
 ### Run dbt
 
-Activate the dbt virtual environment and navigate to the dbt project:
+Activate your Python environment and navigate to the dbt project directory:
 
 ```powershell
-.\.venv-dbt\Scripts\Activate.ps1
 cd weather_dbt
 ```
 
-If the virtual environment is already activated and you are in the project root, run only the `cd weather_dbt` command.
+Run the models:
 
-Check the database connection:
-
-```powershell
-dbt debug
-```
-
-Parse the project:
-
-```powershell
-dbt parse
-```
-
-Build the models:
-
-```powershell
+```bash
 dbt run
 ```
 
-Run data quality tests:
+Run data tests:
 
-```powershell
+```bash
 dbt test
 ```
 
-### dbt Data Quality Tests
+Generate documentation:
 
-The project currently includes six data tests that check:
-
-- Observation IDs are not null.
-- Observation IDs are unique.
-- City IDs are not null.
-- Observation dates are not null in staging.
-- City IDs are not null in the daily weather mart.
-- Observation dates are not null in the daily weather mart.
-
-**Latest validation results:** Both weather models built successfully, and all six dbt tests passed.
-
-## Query the Analytics Mart
-
-Connect to PostgreSQL:
-
-```powershell
-psql -U postgres -h 127.0.0.1 -p 5432 -d weather_db
+```bash
+dbt docs generate
+dbt docs serve
 ```
 
-Query the daily city weather table:
+Make sure your dbt profile is configured in `~/.dbt/profiles.yml` and that its database connection settings match your PostgreSQL environment.
 
-```sql
-SELECT *
-FROM analytics.daily_city_weather
-ORDER BY city_name, observation_date;
+For local execution, use `127.0.0.1` as the database host. For execution from another container on the same Compose network, use the database service hostname `db`.
+
+## Testing
+
+The project includes automated tests using Pytest.
+
+Run all tests:
+
+```bash
+pytest -v
 ```
 
-The analytics mart contains the following columns:
+The test suite covers:
+- API response validation.
+- Weather data cleaning.
+- Database loading behavior.
+- Duplicate prevention.
+- Pipeline execution logic.
 
-| Column | Description |
-|---|---|
-| `city_id` | City identifier |
-| `city_name` | City name |
-| `observation_date` | Date of the weather observation |
-| `average_temperature_c` | Average temperature in Celsius |
-| `total_precipitation_mm` | Total precipitation in millimeters |
-| `max_wind_speed_kmh` | Maximum recorded wind speed in km/h |
-| `observation_count` | Number of source observations included in the daily aggregate |
+## Logging
 
-The latest successful query returned 21 daily city-weather records.
+Pipeline execution logs are stored in:
 
-## Analytical SQL Queries
-
-The file `sql/analytical_queries.sql` contains analytical queries for:
-
-1. Average temperature by city.
-2. Total precipitation by city.
-3. Daily temperature trends.
-4. Cities ranked by average wind speed.
-5. Temperature changes between consecutive observations using `LAG()`.
-
-Run the queries with:
-
-```powershell
-psql -U postgres -h 127.0.0.1 -p 5432 -d weather_db -f sql/analytical_queries.sql
+```text
+logs/pipeline.log
 ```
 
-## Database Design
+Logs capture pipeline progress, successful execution, and errors encountered during processing.
 
-### Cities Table
+## Data Quality and Reliability
 
-Stores city information, including city name, country, latitude, and longitude.
+The pipeline incorporates several data quality measures:
 
-### Weather Observations Table
+- API response structure validation.
+- Required field validation.
+- Numeric data conversion.
+- Missing-value handling.
+- Physical range validation.
+- Duplicate observation prevention.
+- Database constraints.
+- Automated unit and integration tests.
 
-Stores weather measurements linked to each city, including observation timestamp, temperature, precipitation, and wind speed.
+## Future Enhancements
 
-A uniqueness constraint on city and observation timestamp helps prevent duplicate observations.
+Potential improvements include:
 
-## Layered Data Architecture
-
-The project also includes a conceptual three-layer database design that separates raw ingestion, cleaned staging data, and analytical marts.
-
-```mermaid
-flowchart TD
-    A[Open-Meteo API] --> B[Python Ingestion]
-    B --> C[Raw Layer]
-    C --> D[Cleaning and Validation]
-    D --> E[Staging Layer]
-    E --> F[Transformation]
-    F --> G[City Dimension]
-    F --> H[Daily Weather Fact Table]
-    G --> I[SQL Analytics and Reporting]
-    H --> I
-```
-
-### Layer Responsibilities
-
-- **Raw:** Preserves original API payloads and ingestion metadata for traceability and potential reprocessing.
-- **Staging:** Standardizes dates, column names, and weather measurements, and prepares cleaned daily records.
-- **Marts:** Organizes data into analytical structures for reporting and analysis.
-
-The conceptual schemas defined in `sql/layered_schema.sql` are separate from the current dbt models, which read from the existing `public` tables and write to the `analytics` schema.
-
-## Week 1 Checkpoint
-
-This project demonstrates how to:
-
-- Fetch historical data from a public API.
-- Clean and validate data using Python and Pandas.
-- Store structured data in PostgreSQL.
-- Query data using SQL.
-- Analyze consecutive temperature changes using `LAG()`.
-- Build staging and analytics models with dbt.
-- Run automated Python and dbt data quality tests.
-- Execute the Python pipeline using a single command.
-
-## Future Improvements
-
-- Expand the historical date range.
-- Schedule automatic pipeline runs.
-- Improve API error handling and retries.
-- Add more automated tests and relationship checks.
-- Investigate overlapping source observations.
-- Integrate dbt with the conceptual raw, staging, and marts schemas.
-- Create weather visualization dashboards using Power BI or Tableau.
-- Add continuous integration for automated testing.
+- Automating scheduled pipeline execution.
+- Adding Apache Airflow for workflow orchestration.
+- Implementing cloud storage using AWS S3.
+- Adding a data warehouse layer.
+- Building interactive weather dashboards using Power BI or Tableau.
+- Expanding the pipeline to support more cities and longer date ranges.
+- Adding monitoring and alerting for failed pipeline executions.
 
 ## Author
 
-A beginner data engineering project demonstrating API ingestion, data cleaning, ETL orchestration, PostgreSQL, dbt transformations, SQL analytics, and automated testing.
+**Alisha Rawat**
+
+Master's Student — Information Management  
+University of Illinois Urbana-Champaign
+
+## License
+
+This project is intended for educational and portfolio purposes.

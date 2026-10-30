@@ -1,0 +1,8 @@
+.venv/
+.venv-dbt/
+__pycache__/
+.pytest_cache/
+.git/
+.env
+*.pyc
+*.log
