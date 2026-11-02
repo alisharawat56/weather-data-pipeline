@@ -1,61 +1,51 @@
 
--- 1. Average temperature by city
+-- Query 1: Average weather measurements by city
+
 SELECT
     c.name AS city,
-    ROUND(AVG(w.temperature_c), 2) AS avg_temperature_c
-FROM weather_observations AS w
-JOIN cities AS c ON c.city_id = w.city_id
+    ROUND(AVG(w.temperature_c)::numeric, 2) AS avg_temperature_c,
+    ROUND(AVG(w.precipitation_mm)::numeric, 2) AS avg_precipitation_mm,
+    ROUND(AVG(w.wind_speed_kmh)::numeric, 2) AS avg_wind_speed_kmh
+FROM public.weather_observations w
+JOIN public.cities c
+    ON w.city_id = c.city_id
 GROUP BY c.name
-ORDER BY avg_temperature_c DESC;
+ORDER BY c.name;
 
 
--- 2. Total precipitation by city
-SELECT
-    c.name AS city,
-    ROUND(SUM(w.precipitation_mm), 2) AS total_precipitation_mm
-FROM weather_observations AS w
-JOIN cities AS c ON c.city_id = w.city_id
-GROUP BY c.name
-ORDER BY total_precipitation_mm DESC;
+-- Query 2: Top 10 days with highest precipitation
 
-
--- 3. Daily temperature trends by city
-SELECT
-    c.name AS city,
-    w.observation_timestamp::date AS observation_date,
-    ROUND(AVG(w.temperature_c), 2) AS avg_temperature_c
-FROM weather_observations AS w
-JOIN cities AS c ON c.city_id = w.city_id
-GROUP BY c.name, w.observation_timestamp::date
-ORDER BY city, observation_date;
-
-
--- 4. Cities ranked by average wind speed
-SELECT
-    c.name AS city,
-    ROUND(AVG(w.wind_speed_kmh), 2) AS avg_wind_speed_kmh
-FROM weather_observations AS w
-JOIN cities AS c ON c.city_id = w.city_id
-GROUP BY c.name
-ORDER BY avg_wind_speed_kmh DESC;
-
-
--- 5. Temperature changes between consecutive observations
 SELECT
     c.name AS city,
     w.observation_timestamp,
-    w.temperature_c,
-    LAG(w.temperature_c) OVER (
-        PARTITION BY w.city_id
-        ORDER BY w.observation_timestamp
-    ) AS previous_temperature_c,
-    ROUND(
-        w.temperature_c - LAG(w.temperature_c) OVER (
-            PARTITION BY w.city_id
-            ORDER BY w.observation_timestamp
-        ),
-        2
-    ) AS temperature_change_c
-FROM weather_observations AS w
-JOIN cities AS c ON c.city_id = w.city_id
-ORDER BY city, w.observation_timestamp;
+    w.precipitation_mm
+FROM public.weather_observations w
+JOIN public.cities c
+    ON w.city_id = c.city_id
+ORDER BY w.precipitation_mm DESC
+LIMIT 10;
+
+
+-- Query 3: Observation count by city
+
+SELECT
+    c.name AS city,
+    COUNT(w.observation_id) AS observation_count
+FROM public.cities c
+LEFT JOIN public.weather_observations w
+    ON c.city_id = w.city_id
+GROUP BY c.name
+ORDER BY c.name;
+
+
+-- Query 4: Highest recorded temperature by city
+
+SELECT
+    c.name AS city,
+    MAX(w.temperature_c) AS highest_temperature_c
+FROM public.weather_observations w
+JOIN public.cities c
+    ON w.city_id = c.city_id
+GROUP BY c.name
+ORDER BY highest_temperature_c DESC;
+

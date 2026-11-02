@@ -1,5 +1,6 @@
 # Python
 __pycache__/
+*.pyc
 *.py[cod]
 
 # Virtual environment
@@ -19,4 +20,13 @@ htmlcov/
 Thumbs.db
 
 .venv-dbt/
+venv/
 weather_dbt/target/
+
+logs/
+*.log
+
+# Local database and temporary files
+*.dump
+*.backup
+
