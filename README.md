@@ -220,7 +220,7 @@ weather-data-pipeline/
 │   └── pipeline.log
 │
 ├── sql/
-│   └── analysis_queries.sql
+│   └── analytical_queries.sql
 │
 ├── src/
 │   ├── main.py
