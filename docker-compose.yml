@@ -1,7 +1,6 @@
 services:
   db:
     image: postgres:16
-    container_name: weather_postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: weather_db
@@ -20,7 +19,6 @@ services:
 
   app:
     build: .
-    container_name: weather_pipeline
     depends_on:
       db:
         condition: service_healthy
