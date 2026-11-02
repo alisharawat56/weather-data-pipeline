@@ -23,8 +23,12 @@ Thumbs.db
 venv/
 weather_dbt/target/
 
-logs/
-*.log
+# Logs
+logs/*.log
+
+# Generated weather data
+data/raw/*.json
+data/processed/*.csv
 
 # Local database and temporary files
 *.dump
